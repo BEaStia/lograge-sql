@@ -8,7 +8,11 @@ module Lograge
     module Extension
       # Overrides `Lograge::RequestLogSubscriber#extract_request` do add SQL queries
       def extract_request(event, payload)
-        super.merge!(extract_sql_queries)
+        if Lograge::Sql.loggable_paths.any?{|path| payload[:path].match?(path)}
+          super.merge!(extract_sql_queries)
+        else
+          super
+        end
       end
 
       # Collects all SQL queries stored in the Thread during request processing

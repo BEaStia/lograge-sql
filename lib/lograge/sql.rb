@@ -11,11 +11,14 @@ module Lograge
       attr_accessor :formatter
       # Extract information from SQL event
       attr_accessor :extract_event
+      # We've faced the necessity of sql logs only for some paths. The best option for us was to allow setting loggable paths.
+      attr_accessor :loggable_paths
 
       # Initialise configuration with fallback to default values
       def setup(config)
-        Lograge::Sql.formatter     = config.formatter     || default_formatter
-        Lograge::Sql.extract_event = config.extract_event || default_extract_event
+        Lograge::Sql.formatter      = config.formatter      || default_formatter
+        Lograge::Sql.extract_event  = config.extract_event  || default_extract_event
+        Lograge::Sql.loggable_paths = config.loggable_paths || default_loggable_paths
 
         # Disable existing ActiveRecord logging
         unless config.keep_default_active_record_log
@@ -50,6 +53,11 @@ module Lograge
         proc do |event|
           "#{event.payload[:name]} (#{event.duration.to_f.round(2)}) #{event.payload[:sql]}"
         end
+      end
+
+      # By default, we allow all paths to be logged
+      def default_loggable_paths
+        /(.*)/
       end
     end
   end
